@@ -343,6 +343,9 @@ class ResilientSession(Session):
         if is_recoverable:
             # Exponential backoff with full jitter.
             delay = min(self.max_retry_delay, 10 * 2**counter) * random.random()
+            if retry_after is not None:
+                # We have been told when to retry- use that value if it's greater than our backoff.
+                delay = max(delay, retry_after)
             LOG.warning(
                 f"Got recoverable error from {request_method} {url}, will retry [{counter}/{self.max_retries}] in {delay}s. Err: {msg}"  # type: ignore[str-bytes-safe]
             )
